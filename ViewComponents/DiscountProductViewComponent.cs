@@ -5,19 +5,18 @@ using test.Models.Entities;
 
 namespace test.ViewComponents
 {
-    public class ProductViewComponent : ViewComponent
+    public class DiscountProductViewComponent : ViewComponent
     {
         private readonly AppDbContext _dbContext;
-        public ProductViewComponent(AppDbContext dbContext) 
+        public DiscountProductViewComponent(AppDbContext dbContext) 
         { 
             _dbContext = dbContext; 
         }
-
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            List<Product> products = await _dbContext.Products.Include(p=>p.Category).ToListAsync();
+            List<Product> products = await _dbContext.Products.Include(p => p.Category).Where(p => p.Discount != null).ToListAsync();
 
             return View(products);
-        }       
+        }
     }
 }
