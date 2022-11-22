@@ -1,0 +1,20 @@
+﻿@model SlideImageCreateMultipleModel
+
+<div class="row">
+    <div class="col-md-10 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Create Multilpe</h4>
+                <form class="forms-sample" method="post" asp-action="multipleCreate" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label asp-for="Images">Images</label>
+                        <input asp-for="Images" class="form-control" placeholder="Name" accept="image/*">
+                        <span asp-validation-for="Images" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                    <button class="btn btn-light" asp-action="Index">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

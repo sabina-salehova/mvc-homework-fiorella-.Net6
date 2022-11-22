@@ -1,0 +1,19 @@
+﻿@{
+    List<Product> Products = Model.Products;
+}
+
+<!-- PRODUCTS START -->
+
+<section id="products">
+    <div class="container">
+        <div class="row" id="productRows">
+            <input type="hidden" id="productCount" value="@ViewBag.productCount" />
+           <partial name="_ProductPartial" model="@Products"/>
+        </div>
+        <div class="row justify-content-center">
+            <button class="btn btn-primary" id="loadMore">Load More</button>
+        </div>
+    </div>
+</section>
+
+<!-- PRODUCTS END -->

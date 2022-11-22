@@ -1,0 +1,21 @@
+﻿@model SlideImageCreateModel;
+
+<div class="row">
+    <div class="col-md-10 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Default form</h4>
+                <form class="forms-sample" method="post" asp-action="create" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label asp-for="Image">Images</label>
+                        <input asp-for="Image" class="form-control" placeholder="Name" accept="image/*">
+                        <span asp-validation-for="Image" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                    <button class="btn btn-light" asp-action="Index">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
