@@ -1,27 +1,84 @@
 ﻿@{
     List<Product> Products = Model;
+    List<Category> Categories = new List<Category>();
 }
 
-@foreach (var product in Products)
+
+@if (Products.Count>0)
 {
-    <div class="col-sm-6 col-md-4 col-lg-3 mt-3">
-        <div class="product-item text-center" data-id="@product.Category.Name.ToLower()">
-            <div class="img">
-                <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">
-                    <img src="~/img/@product.ImageUrl" class="img-fluid" alt="">
-                </a>
+    foreach (Product item in Model)
+    {
+        if (!Categories.Contains(item.Category))
+            Categories.Add(item.Category);
+    }
+
+    <section id="products">
+        <div class="container">
+            <div class="row pt-5">
+                <div class="offset-lg-3 col-lg-6 pb-5">
+                    <div class="section-title">
+                        <h1>Discount Products</h1>
+                    </div>
+                </div>
+                <div class="col-12 d-flex justify-content-between">
+                    <ul class="category-mobile d-md-none list-unstyled">
+                        <li>
+                            <a href="" class="categories mr-2">Categories</a>
+                            <i class="fas fa-caret-down"></i>
+                            <ul class="category list-unstyled" style="display: none;">
+                                <li><a href="" data-id="all">All</a></li>
+                                @foreach (var category in Categories)
+                                {
+                                    <li><a href="" data-id="@category.Name.ToLower()">@category.Name</a></li>
+                                }
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="category d-none d-md-flex list-unstyled">
+                        <li><a href="" data-id="all">All</a></li>
+                        @foreach (var category in Categories)
+                        {
+                            <li><a href="" data-id="@category.Name.ToLower()">@category.Name</a></li>
+                        }
+                    </ul>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="" class="mr-2">Filter</a>
+                            <i class="fas fa-caret-down"></i>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="title mt-3">
-                <h6>@product.Name</h6>
-            </div>
-            <div>
-                <button class="btn btn-success" id="add-to-basket" value="@product.Id">Add to basket</button>
-                <br />                
-            </div>
-            <div class="price py-2">
-                <span class="text-black-50 pr-2">$@product.Price <sup>-@product.Discount%</sup></span>
-                <strong class="text-success p-1">$@(product.Price - (product.Price * product.Discount) / 100)</strong>
+            <div class="row">
+                @foreach (var product in Products)
+                {
+                    <div class="col-sm-6 col-md-4 col-lg-3 mt-3">
+                        <div class="product-item text-center" data-id="@product.Category.Name.ToLower()">
+                            <div class="img">
+                                <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">
+                                    <img src="~/img/@product.ImageUrl" class="img-fluid" alt="">
+                                </a>
+                            </div>
+                            <div class="title mt-3">
+                                <h6>@product.Name</h6>
+                            </div>
+                            <div>
+                                <button class="btn btn-success" id="add-to-basket" value="@product.Id">Add to basket</button>
+                                <br />
+                            </div>
+                            <div class="price py-2">
+                                <span class="text-black-50 pr-2">$@product.Price <sup>-@product.Discount%</sup></span>
+                                <strong class="text-success p-1">$@(product.Price - (product.Price * product.Discount) / 100)</strong>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
-    </div>
+    </section>
 }
+
+
+
+
+
