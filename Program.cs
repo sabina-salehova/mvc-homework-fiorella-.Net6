@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using test.Areas.AdminPanel.Data;
+using test.Data;
 using test.DataAccessLayer;
 using test.Models.IdentityModels;
 
@@ -8,14 +9,22 @@ namespace test
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public async static Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddMvc().AddNewtonsoftJson(opt=> opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-            builder.Services.AddIdentity<User, IdentityRole>(options=>
+            builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(
+                 connectionString,
+                 builder =>
+                 {
+                     builder.MigrationsAssembly("test");
+                 }
+                 ));
+
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Lockout.MaxFailedAccessAttempts = 3;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
@@ -25,19 +34,29 @@ namespace test
                 options.Password.RequireLowercase = false;
             })
                 .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders(); 
+                .AddDefaultTokenProviders()
+                .AddErrorDescriber<LocalizedIdentityErrorDescriber>();
 
             builder.Services.AddSession(opt=>opt.IdleTimeout=TimeSpan.FromSeconds(1));
-
-            builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(connectionString));
+            
 
             Constants.RootPath = builder.Environment.WebRootPath;
 
             var app = builder.Build();
 
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext=scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                var dataInit = new DataInitializer(dbContext,userManager,roleManager);
+                await dataInit.SeedData();
+            }
+
             app.Use(async (context, next) =>
             {
-                 await next();
+                await next();
 
                 if (context.Response.StatusCode == 404)
                 {
@@ -72,7 +91,7 @@ namespace test
 
             app.UseStaticFiles();
 
-            app.Run();
+            await app.RunAsync();
         }
     }
 }
