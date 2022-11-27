@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MailKit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using test.Data;
 using test.DataAccessLayer;
 using test.Models.Entities;
 using test.ViewModels;
+using IMailService = test.Services.IMailService;
 
 namespace test.Controllers
 {
@@ -12,13 +15,17 @@ namespace test.Controllers
     public class HomeController : Controller
     {
         private readonly AppDbContext _dbContext;
+        private readonly IMailService _mailService;
 
-        public HomeController(AppDbContext dbContext)
+        public HomeController(AppDbContext dbContext, IMailService mailService)
         {
             _dbContext = dbContext;
+            _mailService = mailService;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            await _mailService.SendEmailAsync(new RequestEmail { Body = "Hello" , ToEmail="sebine93@gmail.com", Subject="From lessondd"});
+
             HttpContext.Session.SetString("session","hello");
             Response.Cookies.Append("cookie","p324",new CookieOptions { Expires=DateTimeOffset.Now.AddHours(1)});
 

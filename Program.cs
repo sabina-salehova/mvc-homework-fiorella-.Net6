@@ -1,9 +1,11 @@
+using MailKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using test.Areas.AdminPanel.Data;
 using test.Data;
 using test.DataAccessLayer;
 using test.Models.IdentityModels;
+using test.Services;
 
 namespace test
 {
@@ -38,7 +40,9 @@ namespace test
                 .AddErrorDescriber<LocalizedIdentityErrorDescriber>();
 
             builder.Services.AddSession(opt=>opt.IdleTimeout=TimeSpan.FromSeconds(1));
-            
+            builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
+            builder.Services.AddTransient<Services.IMailService, MailManager>();
 
             Constants.RootPath = builder.Environment.WebRootPath;
 
