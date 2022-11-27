@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MailKit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Packaging.Signing;
+using test.Data;
+using test.Models;
 using test.Models.IdentityModels;
-using test.ViewModels;
+using test.Models.ViewModels;
+using IMailService = test.Services.IMailService;
 
 namespace test.Controllers
 {
@@ -12,12 +16,14 @@ namespace test.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IMailService _mailManager;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<IdentityRole> roleManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<IdentityRole> roleManager, IMailService mailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _mailManager = mailService;
         }
         public IActionResult Index()
         {
@@ -161,6 +167,80 @@ namespace test.Controllers
             await _signInManager.SignOutAsync();
 
             return RedirectToAction(nameof(Login));
+        }
+
+        public IActionResult ForgetPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgetPassword(ForgetViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("","Mail daxil edilmelidir");
+                return View();
+            }
+
+            var existUser = await _userManager.FindByEmailAsync(model.Email);
+
+            if (existUser is null)
+            {
+                ModelState.AddModelError("", "Mail movcud deyil");
+                return View();
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(existUser);
+
+            var resetLink = Url.Action(nameof(ResetPassword), "Account", new { email = model.Email, token}, Request.Scheme, Request.Host.ToString());
+
+            var mailRequest = new RequestEmail
+            {
+                ToEmail=model.Email,
+                Body=resetLink,
+                Subject="Reset Link"
+            };
+
+            await _mailManager.SendEmailAsync(mailRequest);
+            return RedirectToAction(nameof(Login));
+        }
+
+        public IActionResult ResetPassword(string email, string token)
+        {
+            return View(new ResetPasswordViewModel { Email=email,Token=token});
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("","Melumatlar duzgun deyil");
+                return View();
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user is null)
+                return BadRequest();
+
+            var result = await _userManager.ResetPasswordAsync(user,model.Token,model.Password);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("",error.Description);
+            }
+
+            return View();
+
         }
     }
 }

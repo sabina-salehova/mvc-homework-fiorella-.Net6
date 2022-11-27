@@ -1,6 +1,6 @@
 ﻿using test.Models.Entities;
 
-namespace test.ViewModels
+namespace test.Models.ViewModels
 {
     public class ProductViewModel
     {

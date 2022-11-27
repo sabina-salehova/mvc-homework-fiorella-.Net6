@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using test.Data;
 using test.DataAccessLayer;
 using test.Models.Entities;
-using test.ViewModels;
+using test.Models.ViewModels;
 using IMailService = test.Services.IMailService;
 
 namespace test.Controllers
@@ -24,7 +24,7 @@ namespace test.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            await _mailService.SendEmailAsync(new RequestEmail { Body = "Hello" , ToEmail="sebine93@gmail.com", Subject="From lessondd"});
+            //await _mailService.SendEmailAsync(new RequestEmail { Body = "Hello" , ToEmail="sebine93@gmail.com", Subject="From lessondd"});
 
             HttpContext.Session.SetString("session","hello");
             Response.Cookies.Append("cookie","p324",new CookieOptions { Expires=DateTimeOffset.Now.AddHours(1)});

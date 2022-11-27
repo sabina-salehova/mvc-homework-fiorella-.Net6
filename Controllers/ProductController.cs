@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using test.DataAccessLayer;
 using test.Models.Entities;
-using test.ViewModels;
+using test.Models.ViewModels;
 
 namespace test.Controllers
 {
