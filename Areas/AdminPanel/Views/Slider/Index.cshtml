@@ -1,0 +1,46 @@
+﻿@{
+    List<Slider> sliders = Model;
+}
+
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Sliders Table</h4>
+                @if (sliders.Count ==0)
+                {
+                    <a class="btn btn-primary" asp-action="create">Create</a>
+                }
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Subtitle</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var slider in sliders)
+                            {
+                                <tr>
+                                    <td>@Html.Raw(@slider.Title)</td>
+                                    <td>@slider.Subtitle</td>
+                                    <td>
+                                        <a class="btn btn-primary" asp-action="details" asp-route-id="@slider.Id">Details</a>
+                                        <a class="btn btn-success" asp-action="update" asp-route-id="@slider.Id">Update</a>
+                                        <div class="d-inline-block">
+                                            <form class="forms-sample" method="post" asp-action="delete" asp-route-id="@slider.Id">
+                                                <button type="submit" class="btn btn-danger mr-2">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
