@@ -26,13 +26,13 @@ namespace test.Controllers
         {
             //await _mailService.SendEmailAsync(new RequestEmail { Body = "Hello" , ToEmail="sebine93@gmail.com", Subject="From lessondd"});
 
-            HttpContext.Session.SetString("session","hello");
-            Response.Cookies.Append("cookie","p324",new CookieOptions { Expires=DateTimeOffset.Now.AddHours(1)});
+           //HttpContext.Session.SetString("session","hello");
+           // Response.Cookies.Append("cookie","p324",new CookieOptions { Expires=DateTimeOffset.Now.AddHours(1)});
 
-            Slider Slider = _dbContext.Sliders.SingleOrDefault();
-            List<SliderImage> SliderImages = _dbContext.SliderImages.ToList();
-            List<Category> Categories = _dbContext.Categories.ToList();
-            List<Product> Products = _dbContext.Products.Include(product=>product.Category).ToList();
+            Slider Slider =await _dbContext.Sliders.SingleOrDefaultAsync();
+            List<SliderImage> SliderImages =await _dbContext.SliderImages.ToListAsync();
+            List<Category> Categories = await _dbContext.Categories.ToListAsync();
+            List<Product> Products =await _dbContext.Products.Include(product=>product.Category).ToListAsync();
 
             HomeViewModel hvm = new HomeViewModel
             {
@@ -52,7 +52,7 @@ namespace test.Controllers
             return PartialView("_SearchedProductPartial",products);
         }
 
-        public async Task<IActionResult>  Basket()
+        public async Task<IActionResult> Basket()
         {
             //var session = HttpContext.Session.GetString("session");
             //var cookie = Request.Cookies["cookie"];
@@ -60,29 +60,32 @@ namespace test.Controllers
 
             var basket = Request.Cookies["basket"];
 
-            if (basket is null) return NotFound();
+            List<BasketViewModel> basketViewModels = null;
 
-            var basketViewModels = JsonConvert.DeserializeObject<List<BasketViewModel>>(basket);
-
-            foreach(var basketViewModel in basketViewModels)
+            if (basket is not null)
             {
-                var product = await _dbContext.Products.Include(p=>p.Category).SingleOrDefaultAsync(p => p.Id == basketViewModel.Id);
+                basketViewModels = JsonConvert.DeserializeObject<List<BasketViewModel>>(basket);
 
-                if (product != null)
+                foreach (var basketViewModel in basketViewModels)
                 {
-                    basketViewModel.Price = product.Price;
-                    basketViewModel.Category = product.Category;
-                }
+                    var product = await _dbContext.Products.SingleOrDefaultAsync(p => p.Id == basketViewModel.Id);
 
-            }            
+                    if (product != null)
+                    {
+                        basketViewModel.Price = product.Price;
+                    }
+                }
+            }
 
             return View(basketViewModels);
+
         }
 
-        public IActionResult AddToBasket(int? id)
+        public async Task<IActionResult> AddToBasket(int? id)
         {
+            if (id is null ) return BadRequest();
             //throw new Exception();
-            var product = _dbContext.Products.Include(p=>p.Category).SingleOrDefault(x=>x.Id==id);
+            var product = await _dbContext.Products.Include(p=>p.Category).SingleOrDefaultAsync(x=>x.Id==id);
 
             if (product is null) return NotFound();            
 
@@ -90,28 +93,24 @@ namespace test.Controllers
             {
                 Id = product.Id,
                 Name = product.Name,
-                Description = product.Description,
                 Price = product.Price,
                 ImageUrl = product.ImageUrl,
-                CategoryId = product.CategoryId,
-                Category = product.Category,
                 Count = 1,
             };
 
             var basket = Request.Cookies["basket"];
 
-            List<BasketViewModel> existBasketViewModels = null;
+            List<BasketViewModel> existBasketViewModels = new List<BasketViewModel>(); ;
 
-            if (basket is not null)
+            if (!string.IsNullOrEmpty(basket))
             {
                 existBasketViewModels = JsonConvert.DeserializeObject<List<BasketViewModel>>(basket);
-                var existBvm = existBasketViewModels.Where(p => p.Id == product.Id).SingleOrDefault();
+                var existBvm = existBasketViewModels.Where(p => p.Id == id).SingleOrDefault();
                 if (existBvm is null) existBasketViewModels.Add(newBvm);
                 else existBvm.Count++;
             }
             else
             {
-                existBasketViewModels = new List<BasketViewModel>();
                 existBasketViewModels.Add(newBvm);
             } 
 
@@ -120,6 +119,86 @@ namespace test.Controllers
 
             return NoContent();
         
+        }
+        public async Task<IActionResult> RemoveItemFromBasket(int? id)
+        {
+
+            if (id is null) return BadRequest();
+            //throw new Exception();
+            var product = await _dbContext.Products.Include(p => p.Category).SingleOrDefaultAsync(x => x.Id == id);
+
+            if (product is null) return NotFound();
+
+            var basket = Request.Cookies["basket"];
+
+            List<BasketViewModel> existBasketViewModels = JsonConvert.DeserializeObject<List<BasketViewModel>>(basket);
+
+            if (existBasketViewModels.Count>0)
+            {
+                var existBvm = existBasketViewModels.Find(p=>p.Id==id);
+                if (existBvm is not null) existBasketViewModels.Remove(existBvm);
+
+                var productsJson = JsonConvert.SerializeObject(existBasketViewModels, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+                Response.Cookies.Append("basket", productsJson);
+            }
+
+                return RedirectToAction(nameof(Basket));
+        }
+
+        public async Task<IActionResult> MinusCountItemFromBasket(int? id)
+        {
+
+            if (id is null) return BadRequest();
+            //throw new Exception();
+            var product = await _dbContext.Products.Include(p => p.Category).SingleOrDefaultAsync(x => x.Id == id);
+
+            if (product is null) return NotFound();
+
+            var basket = Request.Cookies["basket"];
+
+            List<BasketViewModel> existBasketViewModels = JsonConvert.DeserializeObject<List<BasketViewModel>>(basket);
+
+            if (existBasketViewModels.Count > 0)
+            {
+                var existBvm = existBasketViewModels.Find(p => p.Id == id);
+                if (existBvm is not null)
+                {
+                    if (existBvm.Count > 1) existBvm.Count--;
+                } 
+
+                var productsJson = JsonConvert.SerializeObject(existBasketViewModels, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+                Response.Cookies.Append("basket", productsJson);
+            }
+
+            return RedirectToAction(nameof(Basket));
+        }
+
+        public async Task<IActionResult> PlusCountItemFromBasket(int? id)
+        {
+
+            if (id is null) return BadRequest();
+            //throw new Exception();
+            var product = await _dbContext.Products.Include(p => p.Category).SingleOrDefaultAsync(x => x.Id == id);
+
+            if (product is null) return NotFound();
+
+            var basket = Request.Cookies["basket"];
+
+            List<BasketViewModel> existBasketViewModels = JsonConvert.DeserializeObject<List<BasketViewModel>>(basket);
+
+            if (existBasketViewModels.Count > 0)
+            {
+                var existBvm = existBasketViewModels.Find(p => p.Id == id);
+                if (existBvm is not null)
+                {
+                    existBvm.Count++;
+                }
+
+                var productsJson = JsonConvert.SerializeObject(existBasketViewModels, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+                Response.Cookies.Append("basket", productsJson);
+            }
+
+            return RedirectToAction(nameof(Basket));
         }
 
         public IActionResult e_404()
@@ -132,8 +211,6 @@ namespace test.Controllers
             ViewBag.ErrorCount = 403;
             return View(viewName: "forErrors");
         }
-
-
 
     }
 }

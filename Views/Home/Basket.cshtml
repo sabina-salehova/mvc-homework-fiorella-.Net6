@@ -11,54 +11,49 @@
                         <div class="card-body p-0">
                             <div class="row g-0">
                                 <div class="col-lg-11">
-                                    <div class="p-5">
-                                        <div class="d-flex justify-content-between align-items-center mb-5">
-                                            <h1 class="fw-bold mb-0 text-black">Shopping Cart</h1>
-                                            <h6 class="mb-0 text-muted">@Model.Count items</h6>
-                                        </div>
-                                        <hr class="my-4">
+                                    <div class="p-5">                                       
 
-                                       @foreach (var product in products)
+                                        @if (products is null || products.Count==0)
                                         {
-                                            <div class="row mb-4 d-flex justify-content-between align-items-center">
-                                                <div class="col-md-2 col-lg-2 col-xl-2">
-                                                    <img src="~/img/@product.ImageUrl"
-                                                     class="img-fluid rounded-3" alt="@product.Name">
-                                                </div>
-                                                <div class="col-md-3 col-lg-3 col-xl-3">
-                                                    <h6 class="text-black mb-0">@product.Name</h6>
-                                                </div>
-                                                <div class="col-md-3 col-lg-3 col-xl-3">
-                                                    <h6 class="text-black mb-0">@product.Count</h6>
-                                                </div>
-
-                                                @*<div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-                                                    <button class="btn btn-link px-2"
-                                                        onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
-                                                        <i class="fas fa-minus"></i>
-                                                    </button>
-
-                                                    <input id="form1" min="0" name="quantity" value="@product.Count" type="number"
-                                                       class="form-control form-control-sm" />
-
-                                                    <button class="btn btn-link px-2"
-                                                        onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
-                                                        <i class="fas fa-plus"></i>
-                                                    </button>
-                                                </div>*@
-                                                
-                                                
-                                                <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                                                    <h6 class="mb-0">€ @(product.Price * product.Count)</h6>
-                                                </div>
-                                                <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                                                    <a href="#!" class="text-muted"><i class="fas fa-times"></i></a>
-                                                </div>
+                                            <div class="pt-5">
+                                                <h6 class="mb-0">
+                                                    Basket boshdur!
+                                                </h6>
                                             </div>
                                         }
+                                        else
+                                        {
+                                            <div class="d-flex justify-content-between align-items-center mb-5">
+                                                <h1 class="fw-bold mb-0 text-black">Shopping Cart</h1>
+                                                <h6 class="mb-0 text-muted">@Model.Count items</h6>
+                                            </div>
+                                            <hr class="my-4">
 
-                                                                             
+                                            @foreach (var product in products)
+                                            {
+                                                <div class="row mb-4 d-flex justify-content-between align-items-center">
+                                                    <div class="col-md-2 col-lg-2 col-xl-2">
+                                                        <img src="~/img/@product.ImageUrl"
+                                                     class="img-fluid rounded-3" alt="@product.Name">
+                                                    </div>
+                                                    <div class="col-md-3 col-lg-3 col-xl-3">
+                                                        <h6 class="text-black mb-0">@product.Name</h6>
+                                                    </div>
 
+                                                    <div class="col-md-3 col-lg-3 col-xl-3 row">
+                                                        <a asp-controller="home" asp-action="MinusCountItemFromBasket" asp-route-id="@product.Id"><i class="fa-solid fa-minus"></i></a>
+                                                        <h6 class="text-black mb-0 px-4">@product.Count</h6>
+                                                        <a asp-controller="home" asp-action="PlusCountItemFromBasket" asp-route-id="@product.Id"><i class="fa-solid fa-plus"></i></a>
+                                                    </div>
+                                                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                                                        <h6 class="mb-0">€ @(product.Price * product.Count)</h6>
+                                                    </div>
+                                                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                                                        <a asp-controller="home" asp-action="RemoveItemFromBasket" asp-route-id="@product.Id" class="text-muted"><i class="fas fa-times"></i></a>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }                                                                              
                                         <div class="pt-5">
                                             <h6 class="mb-0">
                                                 <a asp-controller="home" asp-action="index" class="text-body">

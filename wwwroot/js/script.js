@@ -25,7 +25,7 @@ $(document).ready(function () {
             url: "/home/addtobasket?id=" + addProductId,
             type: 'GET',
             success: function () {
-                
+                alert("Mehsul elave edildi");
             },
             //error: function ()
             //{
