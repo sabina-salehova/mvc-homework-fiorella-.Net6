@@ -30,7 +30,7 @@ namespace test
             {
                 options.Lockout.MaxFailedAccessAttempts = 3;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
-                options.SignIn.RequireConfirmedEmail = true;
+                options.SignIn.RequireConfirmedEmail = false;
                 options.User.RequireUniqueEmail = true;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
